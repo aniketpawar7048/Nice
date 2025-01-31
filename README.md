@@ -12,7 +12,7 @@ Additionally, the application supports logging system information to a file.
 
 ## Features
 - Displays system details in the console
-- Logs information to a file (when `-loginfo` is used)
+- Logs information to a file (when `-logInfo` is used)
 - Supports command-line arguments
 - Supported platforms: Windows and Linux
 
@@ -45,9 +45,9 @@ python NiceTestApp.py
 python NiceTestApp.py -logInfo
 ```
 ## Logging
-If the `-loginfo` flag is specified.
+If the `-logInfo` flag is specified.
 
-- logs are stored in the `App_Logs` directory inside the project folder.
+- logs are stored in the `Application_Logs` directory inside the project folder.
 - Log filenames follow the format: `MM_DD_YYYY_HH_MM_SS.log`
 
 ## Output

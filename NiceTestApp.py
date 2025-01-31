@@ -6,88 +6,87 @@ import socket
 from datetime import datetime
 
 
-class Logger:
-    """Handles application logging."""
+class LogHandler:
+    """Handles the configuration of application logging."""
 
     @staticmethod
-    def setup_logger():
-        """Sets up logging by creating a log directory and initializing logging."""
-        logs_path = os.path.join(os.getcwd(), "App_Logs")
-        log_file = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
+    def configure_logging():
+        """Sets up logging by creating a directory for logs and defining the log file format."""
+        log_dir = os.path.join(os.getcwd(), "Application_Logs")
+        log_filename = f"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"
 
-        os.makedirs(logs_path, exist_ok=True)
-        log_file_path = os.path.join(logs_path, log_file)
+        os.makedirs(log_dir, exist_ok=True)
+        log_filepath = os.path.join(log_dir, log_filename)
 
         logging.basicConfig(
-            filename=log_file_path,
+            filename=log_filepath,
             format="[ %(asctime)s ] %(lineno)d %(name)s - %(levelname)s - %(message)s",
             level=logging.INFO
         )
-        logging.info("Execution logs have started")
+        logging.info("Log recording started successfully")
 
-class SystemInfo:
+
+class SystemInspector:
     """
-    SystemInfo class to fetch system-related information.
+    Retrieves and processes system-related data.
     """
 
     @staticmethod
-    def get_top_cpu_processes(limit=5):
+    def fetch_top_cpu_usage(limit=5):
         """
-        Retrieves the top N CPU-consuming processes.
-        :param limit: Number of top processes to retrieve
-        :return: Dictionary of process names with their CPU usage percentage
+        Identifies the top N processes consuming CPU.
+        :param limit: Number of high CPU usage processes to retrieve
+        :return: Dictionary containing process names and their CPU utilization percentage
         """
-        cpu_processes = [proc.info for proc in psutil.process_iter(['pid', 'name', 'cpu_percent'])]
-        cpu_processes.sort(key=lambda proc: proc['cpu_percent'], reverse=True)
+        process_records = [proc.info for proc in psutil.process_iter(['pid', 'name', 'cpu_percent'])]
+        sorted_records = sorted(process_records, key=lambda proc: proc['cpu_percent'], reverse=True)
 
-        return {f"Process{idx + 1}": f"{proc['name']}: {proc['cpu_percent']}%"
-                for idx, proc in enumerate(cpu_processes[:limit])}
+        return {f"Process_{idx + 1}": f"{proc['name']}: {proc['cpu_percent']}%"
+                for idx, proc in enumerate(sorted_records[:limit])}
 
     @staticmethod
-    def get_computer_info():
+    def collect_system_metrics():
         """
-        Retrieves computer system information.
-        :return: Dictionary containing system information
+        Aggregates various system-related statistics.
+        :return: Dictionary with system details
         """
         return {
-            "Computer Name": socket.getfqdn(),
-            "Total Physical Memory": f"{psutil.virtual_memory().total / (1024 ** 3):.2f} GB",
-            "Total Number of Physical Processors": psutil.cpu_count(logical=False),
-            "Total Number of Cores": psutil.cpu_count(logical=True),
-            "Total Number of Hard Disks": sum(1 for disk in psutil.disk_partitions() if 'removable' not in disk.opts),
-            "Top 5 processes in terms of CPU": SystemInfo.get_top_cpu_processes()
+            "System Hostname": socket.getfqdn(),
+            "Total Memory (GB)": f"{psutil.virtual_memory().total / (1024 ** 3):.2f} GB",
+            "Physical CPU Units": psutil.cpu_count(logical=False),
+            "Overall CPU Cores": psutil.cpu_count(logical=True),
+            "Available Disk Drives": sum(1 for disk in psutil.disk_partitions() if 'removable' not in disk.opts),
+            "High CPU Usage Processes": SystemInspector.fetch_top_cpu_usage()
         }
 
 
-class ComputerInfoApp:
+class SystemMonitorApp:
     """
-    Main application class to handle argument parsing and execution.
+    Core application class that interprets command-line arguments and executes tasks.
     """
 
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description="Computer information application")
-        self.parser.add_argument("-help", action="store_true", help="Display help message and exit")
-        self.parser.add_argument("-loginfo", action="store_true", help="Log the computer information to a file")
-        self.args = self.parser.parse_args()
+        self.argument_parser = argparse.ArgumentParser(description="System Performance Monitoring Tool")
+        self.argument_parser.add_argument("-help", action="store_true", help="Display usage guide and exit")
+        self.argument_parser.add_argument("-logInfo", action="store_true", help="Enable logging for system statistics")
+        self.cmd_arguments = self.argument_parser.parse_args()
 
-    def run(self):
-        """
-        Executes the application based on command-line arguments.
-        """
-        if self.args.help:
-            self.parser.print_help()
+    def execute(self):
+        """Executes the relevant functions based on user-specified arguments."""
+        if self.cmd_arguments.help:
+            self.argument_parser.print_help()
             return
 
-        if self.args.loginfo:
-            Logger.setup_logger()
+        if self.cmd_arguments.logInfo:
+            LogHandler.configure_logging()
 
-        info = SystemInfo.get_computer_info()
+        system_info = SystemInspector.collect_system_metrics()
 
-        for key, value in info.items():
+        for key, value in system_info.items():
             print(f"{key}: {value}")
             logging.info(f"{key}: {value}")
 
 
 if __name__ == "__main__":
-    app = ComputerInfoApp()
-    app.run()
+    app_instance = SystemMonitorApp()
+    app_instance.execute()
