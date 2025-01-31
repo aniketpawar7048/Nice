@@ -19,8 +19,8 @@ Additionally, the application supports logging system information to a file.
 ## Prerequisites
 Clone the source code repository:
 ```sh
-git clone <repository_url>
-cd <project_directory>
+git clone https://github.com/aniketpawar7048/Nice.git
+cd Nice
 ```
 ## Install Dependencies
 Ensure you have Python 3 installed. Required Python modules:
